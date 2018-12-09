@@ -1,0 +1,8 @@
+build/
+CMakeFiles/
+CMakeCache.txt
+*.user
+*.o
+*.a
+*.pyc
+
