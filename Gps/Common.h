@@ -7,10 +7,6 @@
 namespace NEMAParser {
 namespace Common {
 
-inline float convertLatitude(const std::string &str) {
-  return std::stof(str);
-}
-
 inline float convertToFloat(const std::string &str) {
   if (str.empty()) {
     return 0.0;

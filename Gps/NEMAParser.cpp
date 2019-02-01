@@ -70,21 +70,21 @@ ErrorCode NEMAParser::parseGPGGA(const std::vector<std::string> &data, GPGGA &gp
     gpgga.reset();
     return ErrorCode::kGPGGAInvalid;
   }
-  gpgga.time                                    = Common::convertToFloat(data.at(1));
-  gpgga.latitude                                = Common::convertToFloat(data.at(2));
-  gpgga.latitude_compass_direction              = data.at(3);
-  gpgga.longitude                               = Common::convertToFloat(data.at(4));
-  gpgga.longitude_compass_direction             = data.at(5);
-  gpgga.fix_type                                = Common::convertToIntFromDecimal(data.at(6));
-  gpgga.number_of_satellites                    = Common::convertToIntFromDecimal(data.at(7));
-  gpgga.horizontal_dilution_of_precision        = Common::convertToFloat(data.at(8));
-  gpgga.altitude                                = Common::convertToFloat(data.at(9));
-  gpgga.altitude_units                          = data.at(10);
-  gpgga.height_of_geoid                         = Common::convertToFloat(data.at(11));
-  gpgga.height_of_geoid_units                   = data.at(12);
-  gpgga.time_since_last_differential_correction = Common::convertToFloat(data.at(13));
-  gpgga.differential_station_ID                 = data.at(14);
-  gpgga.checksum                                = Common::convertToIntFromHex(data.at(15));
+  gpgga.time.set(data.at(1));
+  gpgga.latitude.set(data.at(2));
+  gpgga.latitude_direction                 = data.at(3);
+  gpgga.longitude.set(data.at(4));
+  gpgga.longitude_direction                = data.at(5);
+  gpgga.quality                            = Common::convertToIntFromDecimal(data.at(6));
+  gpgga.number_of_satellites               = Common::convertToIntFromDecimal(data.at(7));
+  gpgga.horizontal_dilution_of_precision   = Common::convertToFloat(data.at(8));
+  gpgga.altitude                           = Common::convertToFloat(data.at(9));
+  gpgga.altitude_units                     = data.at(10);
+  gpgga.undulation                         = Common::convertToFloat(data.at(11));
+  gpgga.undulation_units                   = data.at(12);
+  gpgga.age = Common::convertToFloat(data.at(13));
+  gpgga.differential_station_ID            = data.at(14);
+  gpgga.checksum                           = Common::convertToIntFromHex(data.at(15));
   return ErrorCode::kNoError;
 }
 
@@ -93,14 +93,14 @@ ErrorCode NEMAParser::parseGPGLL(const std::vector<std::string> &data, GPGLL &gp
     gpgll.reset();
     return ErrorCode::kGPGLLInvalid;
   }
-  gpgll.latitude                            = Common::convertToFloat(data.at(1));
-  gpgll.latitude_compass_direction          = data.at(2);
-  gpgll.longitude                           = Common::convertToFloat(data.at(3));
-  gpgll.longitude_compass_direction         = data.at(4);
-  gpgll.utc                                 = data.at(5);
-  gpgll.status                              = data.at(6);
-  gpgll.mode                                = data.at(7);
-  gpgll.checksum                            = Common::convertToIntFromHex(data.at(8));
+  gpgll.latitude.set(data.at(1));
+  gpgll.latitude_direction          = data.at(2);
+  gpgll.longitude.set(data.at(3));
+  gpgll.longitude_direction         = data.at(4);
+  gpgll.time.set(data.at(5));
+  gpgll.status                      = data.at(6);
+  gpgll.mode                        = data.at(7);
+  gpgll.checksum                    = Common::convertToIntFromHex(data.at(8));
   return ErrorCode::kNoError;
 }
 
@@ -163,19 +163,19 @@ ErrorCode NEMAParser::parseGPRMC(const std::vector<std::string> &data, GPRMC &gp
     gprmc.reset();
     return ErrorCode::kGPRMCInvalid;
   }
-  gprmc.utc_time                            = data.at(1);
-  gprmc.status                              = data.at(2);
-  gprmc.latitude                            = Common::convertToFloat(data.at(3));
-  gprmc.latitude_compass_direction          = data.at(4);
-  gprmc.longitude                           = Common::convertToFloat(data.at(5));
-  gprmc.longitude_compass_direction         = data.at(6);
-  gprmc.knots                               = Common::convertToFloat(data.at(7));
-  gprmc.degrees                             = Common::convertToFloat(data.at(8));
-  gprmc.utc_date                            = data.at(9);
-  gprmc.magnetic_variatio_degrees           = Common::convertToFloat(data.at(10));
-  gprmc.magnetic_variatio_degrees_direction = data.at(11);
-  gprmc.mode                                = data.at(12);
-  gprmc.checksum                            = Common::convertToIntFromHex(data.at(13));
+  gprmc.time.set(data.at(1));
+  gprmc.status                       = data.at(2);
+  gprmc.latitude.set(data.at(3));
+  gprmc.latitude_direction           = data.at(4);
+  gprmc.longitude.set(data.at(5));
+  gprmc.longitude_direction          = data.at(6);
+  gprmc.knots                        = Common::convertToFloat(data.at(7));
+  gprmc.degrees                      = Common::convertToFloat(data.at(8));
+  gprmc.date                         = data.at(9);
+  gprmc.magnetic_variation           = Common::convertToFloat(data.at(10));
+  gprmc.magnetic_variation_direction = data.at(11);
+  gprmc.mode                         = data.at(12);
+  gprmc.checksum                     = Common::convertToIntFromHex(data.at(13));
   return ErrorCode::kNoError;
 }
 
@@ -202,7 +202,7 @@ ErrorCode NEMAParser::parseGPZDA(const std::vector<std::string> &data, GPZDA &gp
     gpzda.reset();
     return ErrorCode::kGPZDAInvalid;
   }
-  gpzda.utc                            = data.at(1);
+  gpzda.time.set(data.at(1));
   gpzda.day                            = Common::convertToIntFromDecimal(data.at(2));
   gpzda.month                          = Common::convertToIntFromDecimal(data.at(3));
   gpzda.year                           = Common::convertToIntFromDecimal(data.at(4));

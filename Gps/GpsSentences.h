@@ -2,8 +2,63 @@
 #define GPS_SENTENCES_H_
 
 #include <string>
+#include "Common.h"
 
 namespace NEMAParser {
+
+struct LatLong {
+  LatLong () : degrees(0.f), minutes(0.f), decimal_degrees(0.f) {}
+
+  virtual ~LatLong() {}
+
+  void reset() {
+    degrees = 0.f;
+    minutes = 0.f;
+    decimal_degrees = 0.f;
+  }
+
+  void set(const std::string &value) {
+    degrees = Common::convertToFloat(value.substr(0, value.find(".")-2));
+    minutes = Common::convertToFloat(value.substr(value.find(".")-2));
+    if (degrees >= 0.f) {
+      decimal_degrees = degrees + minutes / 60.f;
+    } else {
+      decimal_degrees = degrees - minutes / 60.f;
+    }
+  }
+
+  float degrees;
+  float minutes;
+  float decimal_degrees;
+};
+
+struct Time {
+  Time () : hours(0.f), minutes(0.f), seconds(0.f), utc("") {}
+
+  virtual ~Time() {}
+
+  void reset() {
+    hours = 0.f;
+    minutes = 0.f;
+    seconds = 0.f;
+    utc = "";
+  }
+
+  void set(const std::string &value) {
+    const std::string str_hours = value.substr(0, 2);
+    const std::string str_minutes = value.substr(2, 2);
+    const std::string str_seconds = value.substr(4);
+    hours = Common::convertToFloat(str_hours);
+    minutes = Common::convertToFloat(str_minutes);
+    seconds = Common::convertToFloat(str_seconds);
+    utc = str_hours + ":" + str_minutes + ":" + str_seconds;
+  }
+
+  float hours;
+  float minutes;
+  float seconds;
+  std::string utc;
+};
 
 struct Sentence {
   Sentence(const std::string &_type, const int _data_num)
@@ -29,95 +84,97 @@ struct GPGGA : Sentence {
 
   void output(std::ostream &stream) const {
     stream << "--------------------GPGGA START--------------------" << std::endl;
-    stream << "time                                    = " << time                                    << std::endl;
-    stream << "latitude                                = " << latitude                                << std::endl;
-    stream << "latitude_compass_direction              = " << latitude_compass_direction              << std::endl;
-    stream << "longitude                               = " << longitude                               << std::endl;
-    stream << "longitude_compass_direction             = " << longitude_compass_direction             << std::endl;
-    stream << "fix_type                                = " << fix_type                                << std::endl;
-    stream << "number_of_satellites                    = " << number_of_satellites                    << std::endl;
-    stream << "horizontal_dilution_of_precision        = " << horizontal_dilution_of_precision        << std::endl;
-    stream << "altitude                                = " << altitude                                << std::endl;
-    stream << "altitude_units                          = " << altitude_units                          << std::endl;
-    stream << "height_of_geoid                         = " << height_of_geoid                         << std::endl;
-    stream << "height_of_geoid_units                   = " << height_of_geoid_units                   << std::endl;
-    stream << "time_since_last_differential_correction = " << time_since_last_differential_correction << std::endl;
-    stream << "differential_station_ID                 = " << differential_station_ID                 << std::endl;
-    stream << "checksum                                = " << checksum                                << std::endl;
+    stream << "time                              = " << time.utc                         << std::endl;
+    stream << "latitude                          = " << latitude.decimal_degrees         << std::endl;
+    stream << "latitude_direction                = " << latitude_direction               << std::endl;
+    stream << "longitude                         = " << longitude.decimal_degrees        << std::endl;
+    stream << "longitude_direction               = " << longitude_direction              << std::endl;
+    stream << "quality                           = " << quality                          << std::endl;
+    stream << "number_of_satellites              = " << number_of_satellites             << std::endl;
+    stream << "horizontal_dilution_of_precision  = " << horizontal_dilution_of_precision << std::endl;
+    stream << "altitude                          = " << altitude                         << std::endl;
+    stream << "altitude_units                    = " << altitude_units                   << std::endl;
+    stream << "undulation                        = " << undulation                       << std::endl;
+    stream << "undulation_units                  = " << undulation_units                 << std::endl;
+    stream << "age                               = " << age                              << std::endl;
+    stream << "differential_station_ID           = " << differential_station_ID          << std::endl;
+    stream << "checksum                          = " << checksum                         << std::endl;
     stream << "--------------------GPGGA END--------------------" << std::endl;
   }
 
   void reset() {
-    time = 0.0f;
-    latitude = 0.0f;
-    latitude_compass_direction = "";
-    longitude = 0.0f;
-    longitude_compass_direction = "";
-    fix_type = 0;
+    time.reset();
+    latitude.reset();
+    latitude_direction = "";
+    longitude.reset();
+    longitude_direction = "";
+    quality = 0;
     number_of_satellites = 0;
     horizontal_dilution_of_precision = 0.0f;
     altitude = 0.0f;
     altitude_units = "";
-    height_of_geoid = 0.0f;
-    height_of_geoid_units = "";
-    time_since_last_differential_correction = 0.0f;
+    undulation = 0.0f;
+    undulation_units = "";
+    age = 0.0f;
     differential_station_ID = "";
     checksum = 0;
   }
 
-  float time;
-  float latitude;
-  std::string latitude_compass_direction;
-  float longitude;
-  std::string longitude_compass_direction;
-  int fix_type;
-  int number_of_satellites;
-  float horizontal_dilution_of_precision;
-  float altitude;
-  std::string altitude_units;
-  float height_of_geoid;
-  std::string height_of_geoid_units;
-  float time_since_last_differential_correction;
-  std::string differential_station_ID;
-  int checksum;
+  Time time;                               // utc
+  LatLong latitude;                        // lat
+  std::string latitude_direction;          // N or S
+  LatLong longitude;                       // long
+  std::string longitude_direction;         // E or W
+  int quality;                             // 0~9
+  int number_of_satellites;                // number of satellites in use
+  float horizontal_dilution_of_precision;  // horizontal dilution of precision
+  float altitude;                          // altitude
+  std::string altitude_units;              // altitude unit : M = meter
+  float undulation;                        // undulation
+  std::string undulation_units;            // undulation unit : M = meter
+  float age;                               // age of correction data (in seconds)
+  std::string differential_station_ID;     // differential station ID
+  int checksum;                            // check sum
 };
 
 //$GPGLL - Geographic position, latitude / longitude
 struct GPGLL : Sentence {
-  GPGLL() : Sentence("GPGLL", 9) {}
+  GPGLL() : Sentence("GPGLL", 9) {
+    reset();
+  }
 
   void output(std::ostream &stream) const {
     stream << "--------------------GPGLL START--------------------" << std::endl;
-    stream << "latitude                             = " << latitude                             << std::endl;
-    stream << "latitude_compass_direction           = " << latitude_compass_direction           << std::endl;
-    stream << "longitude                            = " << longitude                            << std::endl;
-    stream << "longitude_compass_direction          = " << longitude_compass_direction          << std::endl;
-    stream << "utc                                  = " << utc                                  << std::endl;
-    stream << "status                               = " << status                               << std::endl;
-    stream << "mode                                 = " << mode                                 << std::endl;
-    stream << "checksum                             = " << checksum                             << std::endl;
+    stream << "latitude                             = " << latitude.decimal_degrees   << std::endl;
+    stream << "latitude_compass_direction           = " << latitude_direction         << std::endl;
+    stream << "longitude                            = " << longitude.decimal_degrees  << std::endl;
+    stream << "longitude_compass_direction          = " << longitude_direction        << std::endl;
+    stream << "utc                                  = " << time.utc                   << std::endl;
+    stream << "status                               = " << status                     << std::endl;
+    stream << "mode                                 = " << mode                       << std::endl;
+    stream << "checksum                             = " << checksum                   << std::endl;
     stream << "--------------------GPGLL END--------------------" << std::endl;
   }
 
   void reset() {
-    latitude = 0.0f;
-    latitude_compass_direction = "";
-    longitude = 0.0f;
-    longitude_compass_direction = "";
-    utc = "";
+    latitude.reset();
+    latitude_direction = "";
+    longitude.reset();
+    longitude_direction = "";
+    time.reset();
     status = "";
     mode = "";
     checksum = 0;
   }
 
-  float latitude;
-  std::string latitude_compass_direction;
-  float longitude;
-  std::string longitude_compass_direction;
-  std::string utc;
-  std::string status;
-  std::string mode;
-  int checksum;
+  LatLong latitude;                 // lat
+  std::string latitude_direction;   // N or S
+  LatLong longitude;                // long
+  std::string longitude_direction;  // E or W
+  Time time;                        // utc
+  std::string status;               // data status : A = Data valid, V = Data invalid
+  std::string mode;                 // mode
+  int checksum;                     // check sum
 };
 
 //$GPGSA - GPS DOP and active satellites
@@ -168,9 +225,9 @@ struct GPGSA : Sentence {
     checksum = 0;
   }
 
-  std::string mode;
-  int status;
-  int satellite_id_1;
+  std::string mode;    // mode MA  : A = Automatic 2D/3D M = Manual, forced to operate in 2D or 3D
+  int status;          // mode 123 : 1 = Fix not available; 2 = 2D; 3 = 3D
+  int satellite_id_1;  // PRN numbers of satellites
   int satellite_id_2;
   int satellite_id_3;
   int satellite_id_4;
@@ -182,10 +239,10 @@ struct GPGSA : Sentence {
   int satellite_id_10;
   int satellite_id_11;
   int satellite_id_12;
-  float pdop;
-  float hdop;
-  float vdop;
-  int checksum;
+  float pdop;           // position dilution of precision
+  float hdop;           // horizontal dilution of precision
+  float vdop;           // vertical dilution of precision
+  int checksum;         // check sum
 };
 
 //$GPGSV - GPS Satellites in view
@@ -241,13 +298,13 @@ struct GPGSV : Sentence {
     checksum = 0;
   }
 
-  int total_message_num;
-  int message_number;
-  int total_satellite_number;
-  int satellite_number_1;
-  float elevation_1;
-  float azimuth_1;
-  float sn_1;
+  int total_message_num;       // total number of messages
+  int message_number;          // message number
+  int total_satellite_number;  // total number of satellites in view
+  int satellite_number_1;      // satellite PRN number
+  float elevation_1;           // elevation : degrees, 90 maximum
+  float azimuth_1;             // azimuth, degrees True, 000 to 359
+  float sn_1;                  // SNR (C/No) 00-99 dB, null when not tracking
   int satellite_number_2;
   float elevation_2;
   float azimuth_2;
@@ -260,7 +317,7 @@ struct GPGSV : Sentence {
   float elevation_4;
   float azimuth_4;
   float sn_4;
-  int checksum;
+  int checksum;                // check sum
 };
 
 //$GPRMC - Recommended minimum specific GPS/Transit data
@@ -271,51 +328,51 @@ struct GPRMC : Sentence {
 
   void output(std::ostream &stream) const {
     stream << "--------------------GPRMC START--------------------" << std::endl;
-    stream << "utc_time                             = " << utc_time                             << std::endl;
-    stream << "status                               = " << status                               << std::endl;
-    stream << "latitude                             = " << latitude                             << std::endl;
-    stream << "latitude_compass_direction           = " << latitude_compass_direction           << std::endl;
-    stream << "longitude                            = " << longitude                            << std::endl;
-    stream << "longitude_compass_direction          = " << longitude_compass_direction          << std::endl;
-    stream << "knots                                = " << knots                                << std::endl;
-    stream << "degrees                              = " << degrees                              << std::endl;
-    stream << "utc_date                             = " << utc_date                             << std::endl;
-    stream << "magnetic_variatio_degrees            = " << magnetic_variatio_degrees            << std::endl;
-    stream << "magnetic_variatio_degrees_direction  = " << magnetic_variatio_degrees_direction  << std::endl;
-    stream << "mode                                 = " << mode                                 << std::endl;
-    stream << "checksum                             = " << checksum                             << std::endl;
+    stream << "utc                                  = " << time.utc                      << std::endl;
+    stream << "status                               = " << status                        << std::endl;
+    stream << "latitude                             = " << latitude.decimal_degrees      << std::endl;
+    stream << "latitude_compass_direction           = " << latitude_direction            << std::endl;
+    stream << "longitude                            = " << longitude.decimal_degrees     << std::endl;
+    stream << "longitude_compass_direction          = " << longitude_direction           << std::endl;
+    stream << "knots                                = " << knots                         << std::endl;
+    stream << "degrees                              = " << degrees                       << std::endl;
+    stream << "utc_date                             = " << date                          << std::endl;
+    stream << "magnetic_variatio_degrees            = " << magnetic_variation            << std::endl;
+    stream << "magnetic_variatio_degrees_direction  = " << magnetic_variation_direction  << std::endl;
+    stream << "mode                                 = " << mode                          << std::endl;
+    stream << "checksum                             = " << checksum                      << std::endl;
     stream << "--------------------GPRMC END--------------------" << std::endl;
   }
 
   void reset() {
-    utc_time = "";
+    time.reset();
     status = "";
-    latitude = 0.f;
-    latitude_compass_direction = "";
-    longitude = 0.f;
-    longitude_compass_direction = "";
+    latitude.reset();
+    latitude_direction = "";
+    longitude.reset();
+    longitude_direction = "";
     knots = 0.f;
     degrees = 0.f;
-    utc_date = "";
-    magnetic_variatio_degrees = 0.f;
-    magnetic_variatio_degrees_direction = "";
+    date = "";
+    magnetic_variation = 0.f;
+    magnetic_variation_direction = "";
     mode = "";
     checksum = 0;
   }
 
-  std::string utc_time;
-  std::string status;
-  float latitude;
-  std::string latitude_compass_direction;
-  float longitude;
-  std::string longitude_compass_direction;
-  float knots;
-  float degrees;
-  std::string utc_date;
-  float magnetic_variatio_degrees;
-  std::string magnetic_variatio_degrees_direction;
-  std::string mode;
-  int checksum;
+  Time time;                                 // utc
+  std::string status;                        // position status : A = data valid, V = data invalid)
+  LatLong latitude;                          // lat
+  std::string latitude_direction;            // N or S
+  LatLong longitude;                         // long
+  std::string longitude_direction;           // E or W
+  float knots;                               // speed over ground, knots
+  float degrees;                             // track made good, degrees True
+  std::string date;                          // utc data
+  float magnetic_variation;                  // magnetic variation, degrees
+  std::string magnetic_variation_direction;  // Magnetic variation direction : E or W
+  std::string mode;                          // mode
+  int checksum;                              // check sum
 };
 
 //$GPVTG - Track made good and ground speed
@@ -352,16 +409,16 @@ struct GPVTG : Sentence {
     checksum = 0;
   }
 
-  float track;
-  std::string track_mode;
-  float magnetic_track;
-  std::string magnetic_track_mode;
-  float ground_speed_knots;
-  std::string knots;
-  float ground_speed_kmh;
-  std::string kmh;
-  std::string mode;
-  int checksum;
+  float track;                      // track made good, degrees True
+  std::string track_mode;           // True track indicator
+  float magnetic_track;             // Track made good, degrees Magnetic
+  std::string magnetic_track_mode;  // magnetic track indicator
+  float ground_speed_knots;         // speed over ground, knots
+  std::string knots;                // nautical speed indicator (N = Knots)
+  float ground_speed_kmh;           // speed, kilometres/hour
+  std::string kmh;                  // speed indicator (K = km/hr)
+  std::string mode;                 // positioning system mode indicator
+  int checksum;                     // check sum
 };
 
 //$GPZDA - Date & Time
@@ -372,7 +429,7 @@ struct GPZDA : Sentence {
 
   void output(std::ostream &stream) const {
     stream << "--------------------GPZDA START--------------------" << std::endl;
-    stream << "utc                            = " << utc                            << std::endl;
+    stream << "utc                            = " << time.utc                       << std::endl;
     stream << "day                            = " << day                            << std::endl;
     stream << "month                          = " << month                          << std::endl;
     stream << "year                           = " << year                           << std::endl;
@@ -383,7 +440,7 @@ struct GPZDA : Sentence {
   }
 
   void reset() {
-    utc = "";
+    time.reset();
     day = 0;
     month = 0;
     year = 0;
@@ -392,13 +449,13 @@ struct GPZDA : Sentence {
     checksum = 0;
   }
 
-  std::string utc;
-  int day;
-  int month;
-  int year;
-  int local_zone_hours_description;
-  int local_zone_minutes_description;
-  int checksum;
+  Time time;                           // utc
+  int day;                             // day
+  int month;                           // month
+  int year;                            // year
+  int local_zone_hours_description;    // local zone description
+  int local_zone_minutes_description;  // local zone minutes description
+  int checksum;                        // check sum
 };
 
 } // end of namespase NEMAParser
