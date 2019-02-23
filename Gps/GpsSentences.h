@@ -1,6 +1,7 @@
 #ifndef GPS_SENTENCES_H_
 #define GPS_SENTENCES_H_
 
+#include <iomanip>
 #include <string>
 #include "Common.h"
 
@@ -83,6 +84,7 @@ struct GPGGA : Sentence {
   }
 
   void output(std::ostream &stream) const {
+    stream << std::setprecision(10);
     stream << "--------------------GPGGA START--------------------" << std::endl;
     stream << "time                              = " << time.utc                         << std::endl;
     stream << "latitude                          = " << latitude.decimal_degrees         << std::endl;
@@ -144,6 +146,7 @@ struct GPGLL : Sentence {
   }
 
   void output(std::ostream &stream) const {
+    stream << std::setprecision(10);
     stream << "--------------------GPGLL START--------------------" << std::endl;
     stream << "latitude                             = " << latitude.decimal_degrees   << std::endl;
     stream << "latitude_compass_direction           = " << latitude_direction         << std::endl;
@@ -182,6 +185,7 @@ struct GPGSA : Sentence {
   GPGSA() : Sentence("GPGSA", 19) {}
 
   void output(std::ostream &stream) const {
+    stream << std::setprecision(10);
     stream << "--------------------GPGSA START--------------------" << std::endl;
     stream << "mode            = " << mode            << std::endl;
     stream << "status          = " << status          << std::endl;
@@ -252,6 +256,7 @@ struct GPGSV : Sentence {
   }
 
   void output(std::ostream &stream) const {
+    stream << std::setprecision(10);
     stream << "--------------------GPGSV START--------------------" << std::endl;
     stream << "total_message_num      = " << total_message_num      << std::endl;
     stream << "message_number         = " << message_number         << std::endl;
@@ -382,6 +387,7 @@ struct GPVTG : Sentence {
   }
 
   void output(std::ostream &stream) const {
+    stream << std::setprecision(10);
     stream << "--------------------GPVTG START--------------------" << std::endl;
     stream << "track               = " << track               << std::endl;
     stream << "track_mode          = " << track_mode          << std::endl;
@@ -428,6 +434,7 @@ struct GPZDA : Sentence {
   }
 
   void output(std::ostream &stream) const {
+    stream << std::setprecision(10);
     stream << "--------------------GPZDA START--------------------" << std::endl;
     stream << "utc                            = " << time.utc                       << std::endl;
     stream << "day                            = " << day                            << std::endl;

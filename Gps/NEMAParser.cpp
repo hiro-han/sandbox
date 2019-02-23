@@ -42,6 +42,7 @@ ErrorCode NEMAParser::parse(const std::string &data) {
   } else {
     error = ErrorCode::kUnsupportFormat;
   }
+
   return error;
 }
 
